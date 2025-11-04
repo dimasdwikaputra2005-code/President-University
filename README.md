@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Pelton Turbine Dimension Calculator</title>
+<style>
+  :root {
+    --primary: #2c3e50;
+    --secondary: #3498db;
+    --accent: #e74c3c;
+    --light: #ecf0f1;
+    --dark: #2c3e50;
+    --success: #2ecc71;
+    --shadow: rgba(0, 0, 0, 0.1);
+  }
+  
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: var(--dark);
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    min-height: 100vh;
+    padding: 20px;
+  }
+  
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding: 20px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px var(--shadow);
+  }
+  
+  h1 {
+    color: var(--primary);
+    margin-bottom: 10px;
+    font-size: 2.2rem;
+  }
+  
+  .subtitle {
+    color: #7f8c8d;
+    font-size: 1.1rem;
+  }
+  
+  .calculator-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
+    margin-bottom: 30px;
+  }
+  
+  .input-section, .results-section {
+    flex: 1;
+    min-width: 300px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px var(--shadow);
+    padding: 25px;
+  }
+  
+  .section-title {
+    color: var(--primary);
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--light);
+    font-size: 1.4rem;
+  }
+  
+  .input-group {
+    margin-bottom: 20px;
+  }
+  
+  label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--dark);
+  }
+  
+  .input-with-unit {
+    display: flex;
+    align-items: center;
+  }
+  
+  input[type="number"] {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+  }
+  
+  input[type="number"]:focus {
+    border-color: var(--secondary);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+  }
+  
+  .unit {
+    margin-left: 10px;
+    color: #7f8c8d;
+    font-weight: 500;
+  }
+  
+  .calculate-btn {
+    width: 100%;
+    padding: 15px;
+    background-color: var(--secondary);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+    margin-top: 10px;
+  }
+  
+  .calculate-btn:hover {
+    background-color: #2980b9;
+    transform: translateY(-2px);
+  }
+  
+  .calculate-btn:active {
+    transform: translateY(0);
+  }
+  
+  .results-container {
+    display: none;
+  }
+  
+  .result-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 15px;
+  }
+  
+  .result-item {
+    background-color: var(--light);
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid var(--secondary);
+  }
+  
+  .result-label {
+    font-size: 0.9rem;
+    color: #7f8c8d;
+    margin-bottom: 5px;
+  }
+  
+  .result-value {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--primary);
+  }
+  
+  .info-section {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px var(--shadow);
+    padding: 25px;
+    margin-top: 30px;
+  }
+  
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+  }
+  
+  .info-card {
+    padding: 15px;
+    background-color: var(--light);
+    border-radius: 8px;
+  }
+  
+  .info-card h3 {
+    color: var(--primary);
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+  }
+  
+  .info-card p {
+    color: #5d6d7e;
+    font-size: 0.95rem;
+  }
+  
+  @media (max-width: 768px) {
+    .calculator-container {
+      flex-direction: column;
+    }
+    
+    .result-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Pelton Turbine Dimension Calculator</h1>
+      <p class="subtitle">Calculate the optimal dimensions for your Pelton turbine based on head, flow rate, and electrical parameters</p>
+    </header>
+    
+    <div class="calculator-container">
+      <div class="input-section">
+        <h2 class="section-title">Input Parameters</h2>
+        
+        <div class="input-group">
+          <label for="head">Head</label>
+          <div class="input-with-unit">
+            <input type="number" id="head" value="15" step="any" min="0" />
+            <span class="unit">meters (m)</span>
+          </div>
+        </div>
+        
+        <div class="input-group">
+          <label for="flow">Flow Rate</label>
+          <div class="input-with-unit">
+            <input type="number" id="flow" value="0.5" step="any" min="0" />
+            <span class="unit">m³/s</span>
+          </div>
+        </div>
+        
+        <div class="input-group">
+          <label for="frequency">Electrical Frequency</label>
+          <div class="input-with-unit">
+            <input type="number" id="frequency" value="50" step="any" min="0" />
+            <span class="unit">Hz</span>
+          </div>
+        </div>
+        
+        <div class="input-group">
+          <label for="poles">Number of Poles</label>
+          <div class="input-with-unit">
+            <input type="number" id="poles" value="4" step="1" min="2" />
+            <span class="unit">poles</span>
+          </div>
+        </div>
+        
+        <button class="calculate-btn" onclick="calculatePelton()">Calculate Dimensions</button>
+      </div>
+      
+      <div class="results-section">
+        <h2 class="section-title">Calculated Dimensions</h2>
+        
+        <div id="results" class="results-container">
+          <div class="result-grid">
+            <div class="result-item">
+              <div class="result-label">Jet Velocity (Vj)</div>
+              <div class="result-value" id="Vj">-</div>
+            </div>
+            
+            <div class="result-item">
+              <div class="result-label">Jet Diameter (dj)</div>
+              <div class="result-value" id="dj">-</div>
+            </div>
+            
+            <div class="result-item">
+              <div class="result-label">Rotational Speed (n)</div>
+              <div class="result-value" id="n">-</div>
+            </div>
+            
+            <div class="result-item">
+              <div class="result-label">Runner Peripheral Velocity (U)</div>
+              <div class="result-value" id="U">-</div>
+            </div>
+            
+            <div class="result-item">
+              <div class="result-label">Runner Diameter (D)</div>
+              <div class="result-value" id="D">-</div>
+            </div>
+            
+            <div class="result-item">
+              <div class="result-label">Number of Buckets (Z)</div>
+              <div class="result-value" id="Z">-</div>
+            </div>
+            
+            <div class="result-item">
+              <div class="result-label">Bucket Width (B)</div>
+              <div class="result-value" id="B">-</div>
+            </div>
+            
+            <div class="result-item">
+              <div class="result-label">Bucket Length (L)</div>
+              <div class="result-value" id="L">-</div>
+            </div>
+            
+            <div class="result-item">
+              <div class="result-label">Bucket Depth (E)</div>
+              <div class="result-value" id="E">-</div>
+            </div>
+            
+            <div class="result-item">
+              <div class="result-label">Bucket Height (A)</div>
+              <div class="result-value" id="A">-</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="info-section">
+      <h2 class="section-title">About Pelton Turbines</h2>
+      <div class="info-grid">
+        <div class="info-card">
+          <h3>What is a Pelton Turbine?</h3>
+          <p>A Pelton turbine is an impulse-type water turbine invented by Lester Allan Pelton in the 1870s. It's most efficient in high-head, low-flow applications.</p>
+        </div>
+        
+        <div class="info-card">
+          <h3>How It Works</h3>
+          <p>The Pelton turbine uses the impulse of moving water to drive the runner. Jets of water strike the buckets, transferring momentum to the turbine.</p>
+        </div>
+        
+        <div class="info-card">
+          <h3>Key Components</h3>
+          <p>Main components include the runner with buckets, nozzle with needle valve, casing, and breaking jet. Proper dimensioning is crucial for efficiency.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+function calculatePelton() {
+  const g = 9.81;                    // gravity m/s^2
+  let H = parseFloat(document.getElementById("head").value);
+  let Q = parseFloat(document.getElementById("flow").value);
+  let f = parseFloat(document.getElementById("frequency").value);
+  let p = parseInt(document.getElementById("poles").value);
+
+  // 1. Jet Velocity Vj
+  let Vj = Math.sqrt(2 * g * H);
+
+  // 2. Jet Diameter dj
+  // Q = A * Vj, A = pi * dj^2 /4 => dj = sqrt(4Q/pi/Vj)
+  let dj = Math.sqrt((4 * Q) / (Math.PI * Vj));
+
+  // 3. Rotational Speed n (rpm)
+  let n = (120 * f) / p;
+
+  // 4. Runner Peripheral Velocity U (speed ratio = 0.45)
+  let U = 0.45 * Vj;
+
+  // 5. Runner Diameter D (m) => D = 60*U/(pi*n)
+  let D = (60 * U) / (Math.PI * n);
+
+  // 6. Number of Buckets Z (assuming correction factor k=1.3)
+  let k = 1.3;
+  let Z = Math.round((Math.PI * D) / (k * dj));
+
+  // 7. Bucket dimensions (multiples of dj)
+  let B = (3 * dj).toFixed(3);        // Bucket Width
+  let L = (2.8 * dj).toFixed(3);      // Bucket Length
+  let E = (1.0 * dj).toFixed(3);      // Bucket Depth
+  let A = (2.0 * dj).toFixed(3);      // Bucket Height
+
+  // Display results
+  document.getElementById("Vj").textContent = Vj.toFixed(3) + " m/s";
+  document.getElementById("dj").textContent = dj.toFixed(3) + " m";
+  document.getElementById("n").textContent = n.toFixed(0) + " rpm";
+  document.getElementById("U").textContent = U.toFixed(3) + " m/s";
+  document.getElementById("D").textContent = D.toFixed(3) + " m";
+  document.getElementById("Z").textContent = Z;
+  document.getElementById("B").textContent = B + " m";
+  document.getElementById("L").textContent = L + " m";
+  document.getElementById("E").textContent = E + " m";
+  document.getElementById("A").textContent = A + " m";
+
+  document.getElementById("results").style.display = "block";
+}
+</script>
+
+</body>
+</html>
